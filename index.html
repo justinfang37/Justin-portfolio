@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Justin Fang — 方子言 · Engineer & Cultivator</title>
+<meta name="description" content="Portfolio of Justin Fang — Electrical Engineering @ UWaterloo">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="landing">
+  <img class="gate-tree" src="green tree.png" alt="" aria-hidden="true">
+  <canvas id="landing-canvas"></canvas>
+  <div class="landing-vignette"></div>
+  <div class="gate-seal" aria-hidden="true">劍</div>
+
+  <div class="landing-content">
+    <div class="landing-kicker">· A journey through my life ·</div>
+    <h1 class="landing-title">
+      <span class="title-cn">「 方子言 」</span>
+      <span class="title-en">
+        <span class="name-jade">JUSTIN</span>&nbsp;<span class="name-gold">FANG</span>
+      </span>
+    </h1>
+    <div class="landing-sub">
+      <span class="sub-line"></span>
+      <span>Electrical Engineering · University of Waterloo</span>
+      <span class="sub-line"></span>
+    </div>
+
+    <button id="enter-btn" aria-label="Enter the portfolio">
+      <span class="btn-frame"></span>
+      <span class="btn-text">ENTER&nbsp;THE&nbsp;REALM</span>
+    </button>
+
+    <div class="landing-hint">the path of ten thousand transistors begins with a single step</div>
+  </div>
+
+  <div id="ink-layer" aria-hidden="true">
+    <svg class="ink-brush" viewBox="0 0 60 300">
+      <rect x="25" y="4" width="10" height="168" rx="5" fill="#7a5538"/>
+      <rect x="25" y="4" width="4" height="168" rx="2" fill="#9a7350" opacity="0.7"/>
+      <rect x="21" y="170" width="18" height="22" rx="3" fill="#d9d9d9"/>
+      <path d="M22,192 Q30,196 38,192 L33,266 Q30,276 27,266 Z" fill="#161616"/>
+      <path d="M27,196 L28,250" stroke="#3a3a3a" stroke-width="1.6"/>
+    </svg>
+    <div class="ink-drop"></div>
+    <div class="ink-blot"></div>
+    <div class="stroke-reveal">
+      <div class="stroke-band">
+        <span class="stroke-text">ENTERING&nbsp;REALM</span>
+        <div class="loading-bar">
+          <div class="loading-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="slash-layer" aria-hidden="true">
+    <svg id="slash-sword" viewBox="0 0 600 120" aria-hidden="true">
+      <g class="sword-g">
+        <polygon class="sword-blade" points="0,60 470,44 530,60 470,76"/>
+        <line class="sword-fuller" x1="40" y1="60" x2="470" y2="60"/>
+        <rect class="sword-guard" x="466" y="34" width="14" height="52" rx="4"/>
+        <rect class="sword-hilt" x="480" y="52" width="80" height="16" rx="6"/>
+        <circle class="sword-pommel" cx="566" cy="60" r="11"/>
+        <path class="sword-tassel" d="M566,70 q-6,22 4,40 M566,70 q8,20 -2,42"/>
+      </g>
+    </svg>
+    <div class="slash slash-1"></div>
+    <div class="slash slash-2"></div>
+    <div class="slash slash-3"></div>
+    <div class="slash-flash"></div>
+  </div>
+</div> 
+
+<div id="shatter" aria-hidden="true">
+  <div class="shard shard-a"></div>
+  <div class="shard shard-b"></div>
+  <div class="shard shard-c"></div>
+  <div class="shard shard-d"></div>
+  <div class="glitch-static"></div>
+  <div class="glitch-bars"></div>
+  <div class="shatter-flash"></div>
+</div>
+
+<div id="main" hidden>
+  <img class="ink-mountain" src="Black-White BG.webp" alt="" aria-hidden="true">
+  <canvas id="main-canvas"></canvas>
+  <div class="main-mist" aria-hidden="true"></div>
+
+  <nav id="nav">
+    <div class="scroll-roller left-roller"></div>
+    <a class="nav-brand" href="#hero"><span class="brand-seal">方</span> <span class="brand-text">JUSTIN FANG</span></a>
+    <div class="nav-links">
+      <a href="#about"><i>道</i><span>Origin</span></a>
+      <a href="#experience"><i>歷</i><span>Experience</span></a>
+      <a href="#projects"><i>器</i><span>Projects</span></a>
+      <a href="#beyond"><i>劍</i><span>Interests</span></a>
+      <a href="#contact"><i>訊</i><span>Contact Me</span></a>
+    </div>
+    <div class="scroll-roller right-roller"></div>
+  </nav>
+
+  <header class="section hero" id="hero">
+    <div class="hero-inner reveal">
+      <div class="hero-kicker">⟡ ELECTRICAL ENGINEERING · UNIVERSITY OF WATERLOO ⟡</div>
+      <h1 class="hero-name">Justin <span class="jade">Fang</span></h1>
+      <p class="hero-tag">
+        locked in & grinding. send me a message below for inquiries (or if you need someone to talk to)! 
+      </p>
+      
+      <div class="hero-cta">
+        <a class="sword-hilt" href="#projects">
+          <span class="hilt-tassel">
+            <span class="t-cord"></span>
+            <span class="t-knot"></span>
+            <span class="t-fringe"></span>
+          </span>
+          <span class="hilt-text">View Projects</span>
+          <span class="hilt-guard"></span>
+        </a>
+        
+        <a class="sword-core" href="#contact">Send Message</a>
+        
+        <a class="sword-tip" href="Resume.pdf" download><span class="dl-icon">↓</span> Resume</a>
+      </div>
+    </div>
+    <div class="hero-glyph" aria-hidden="true">電</div>
+    <div class="scroll-cue" aria-hidden="true"><span></span>descend</div>
+  </header>
+
+  <section class="section" id="about">
+    <div class="section-head reveal">
+      <span class="section-cn">道</span>
+      <h2>Origin <em>/ About & Education</em></h2>
+      <div class="head-rule"></div>
+    </div>
+    <div class="about-grid">
+      <div class="panel reveal">
+        <h3>The Cultivator</h3>
+        <!-- The Ink-Wash Portrait -->
+        <div class="cultivator-portrait">
+          <img src="justin.JPG" alt="Justin Fang">
+          <div class="portrait-seal">looking for work</div>
+        </div>
+        <p>
+          Hey, I'm Justin — an Electrical Engineering student at the University of Waterloo, an overstimulated 
+          older brother, light novel slop reader, martial arts practitioner, and someone that's never afraid to 
+          try new things. 
+        </p>
+        <p>
+          Off the bench, I've spent years leading youth STEM outreach across Alberta and
+          competing internationally in Taijiquan for Team Canada. I'm always willing to 
+          try out new things! If you have anything cool, please reach out and surprise me!
+        </p>
+        <div class="chip-row">
+          <span class="chip">Python</span><span class="chip">C++</span><span class="chip">n8n</span>
+          <span class="chip">Arduino</span><span class="chip">Soldering</span>
+          <span class="chip">3D Printing</span><span class="chip">Git / GitHub</span>
+        </div>
+      </div>
+      <div class="panel panel-edu reveal">
+        <div class="edu-seal" aria-hidden="true">學</div>
+        <h3>The Sect</h3>
+        <div class="edu-school">University of Waterloo</div>
+        <div class="edu-degree">BASc, Electrical Engineering</div>
+        <div class="edu-date">Sep 2025 — Present · Waterloo, ON</div>
+        <ul class="edu-list">
+          <li>Analog Team Member — UWASIC Design Team</li>
+          <li>WATonomous Micro Team Member</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="experience">
+    <div class="section-head reveal">
+      <span class="section-cn">歷</span>
+      <h2>Experience</h2>
+      <div class="head-rule"></div>
+    </div>
+    <div class="timeline">
+      <div class="t-item reveal">
+        <div class="t-node"></div>
+        <div class="t-card">
+          <div class="t-date">Jan 2026 — Apr 2026 · New York, NY</div>
+          <h3>Automation & Backend Developer</h3>
+          <div class="t-org">Garde-Robe Inc</div>
+          <ul>
+            <li>Deployed and maintained an AWS EC2 instance running an n8n receipt-parsing pipeline with Docling and LLMs — automated structured-data extraction from retailer emails and cut costs by 90%.</li>
+            <li>Authored LLM extraction prompts with strict JSON output and conditional logic, improving reliability by 50%.</li>
+            <li>Designed normalized database schemas with entity relationships for a future backend migration.</li>
+            <li>Debugged AWS CloudWatch logs to find token expiry and silent failures, restoring email processing.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="t-item reveal">
+        <div class="t-node"></div>
+        <div class="t-card">
+          <div class="t-date">Current Project · Waterloo, ON</div>
+          <h3>Analog Team Member</h3>
+          <div class="t-org">UWASIC Design Team — University of Waterloo</div>
+          <ul>
+            <li>Designing a single-stage operational amplifier in the SkyWater 130nm PDK using XSchem in a Nix-managed environment.</li>
+            <li>Completed the analog IC design flow from schematic to DRC/LVS-verified physical layout in Magic VLSI.</li>
+            <li>Performed circuit verification: DC operating point analysis, AC frequency response, and testbenches.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="t-item reveal">
+        <div class="t-node"></div>
+        <div class="t-card">
+          <div class="t-date">Nov 2022 — Jul 2025 · Edmonton, AB</div>
+          <h3>Vice President of Operations</h3>
+          <div class="t-org">Youth STEMming Change (non-profit)</div>
+          <ul>
+            <li>Coordinated the Edmonton Science Bowl, raising over $1,300 and growing youth participation.</li>
+            <li>Designed bridge-building, rocketry, and forensics workshops reaching 3000+ youths across Alberta.</li>
+            <li>Partnered with the City of Edmonton Youth Council for city-wide initiatives and seamless events.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <div class="section-head reveal">
+      <span class="section-cn">器</span>
+      <h2>Projects</h2>
+      <div class="head-rule"></div>
+    </div>
+    <div class="proj-grid">
+      <article class="proj-card reveal">
+        <div class="proj-glyph">行</div>
+        <h3>Autonomous Robot Navigation</h3>
+        <div class="proj-stack">C++ · ROS 2 · Docker · Foxglove</div>
+        <p>Lidar-to-occupancy-grid costmap for a differential-drive robot — converts polar range/angle to (x, y) grid coordinates, inflates obstacles with linear cost falloff over a 2m radius, and dynamically sizes the grid from the scan's angular parameters.</p>
+      </article>
+      <article class="proj-card reveal">
+        <div class="proj-glyph">爪</div>
+        <h3>Omni-Directional Mecanum Claw Robot</h3>
+        <div class="proj-stack">C++ · ESP32 · Arduino · SolidWorks</div>
+        <p>48-hour hackathon build: an all-cardboard chassis with custom 3D-printed omni wheels, 6 motors on one breadboard, dual-ESP32 wireless control over ESP-NOW, and a 2-DOF claw with full 360° movement.</p>
+      </article>
+      <article class="proj-card reveal">
+        <div class="proj-glyph">醫</div>
+        <h3>Hospital Induced Delirium Detection</h3>
+        <div class="proj-stack">C++ · Python · Arduino</div>
+        <p>Non-invasive diagnostic device combining sensors, text-to-speech, speech-to-text, and a custom 3D-printed enclosure to track patient cognition — cutting false positives by 30% versus standard observation.</p>
+      </article>
+      <article class="proj-card reveal">
+        <div class="proj-glyph">牌</div>
+        <h3>Arcade Blackjack</h3>
+        <div class="proj-stack">Python · Pygame</div>
+        <p>Fully interactive casino blackjack with OOP dealer/player/card classes, event-driven UI, real-time betting and statistics, and probability logic handling aces and dealer constraints with 100% accuracy.</p>
+      </article>
+      <article class="proj-card reveal">
+        <div class="proj-glyph">戰</div>
+        <h3>Simulated Medieval Battlefield</h3>
+        <div class="proj-stack">Python · OOP</div>
+        <p>Turn-based tactical combat simulator — a Warrior base class with 8 polymorphic subclasses, 1v1 and 5v5 skirmishes, splash/critical/healing mechanics, and new characters implementable in under 15 lines.</p>
+      </article>
+      <article class="proj-card reveal">
+        <div class="proj-glyph">蛙</div>
+        <h3>Crossy Road</h3>
+        <div class="proj-stack">Processing (Java)</div>
+        <p>Frogger-style arcade recreation with a master Rectangle collision parent class, specialized Car/Log/Train/Player children, two-player WASD + arrow-key support, and a live scoring UI.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="beyond">
+    <div class="section-head reveal">
+      <span class="section-cn">劍</span>
+      <h2>Hobbies <em>/ Beyond Engineering</em></h2>
+      <div class="head-rule"></div>
+    </div>
+    <div class="beyond-panel reveal">
+      <div class="beyond-art" aria-hidden="true">
+        <div class="taiji-ring"></div>
+        <div class="taiji-cn">太極</div>
+      </div>
+      <div class="beyond-text">
+        <h3>Team Canada — Taijiquan</h3>
+        <p>
+          Competing under Wushu Canada since 2018, I rose from junior competitor to the
+          <span class="jade">highest-ranked U18 male in taijiquan (2024)</span>, earning the sole
+          U18 male roster spot for Canada at the 4th World Taijiquan Championships by placing
+          1st overall.
+        </p>
+        <ul class="beyond-list">
+          <li>5+ national gold medals across multiple events since 2018</li>
+          <li>Appointed coach for Team Canada — guided 2+ athletes to podium finishes at the World Taijiquan Championships in Singapore</li>
+          <li>Trained 5+ hours weekly in school terms, 8 hours daily in summers</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contact">
+    <div class="section-head reveal">
+      <span class="section-cn">訊</span>
+      <h2>Transmission <em>/ Contact</em></h2>
+      <div class="head-rule"></div>
+    </div>
+    <div class="contact-panel reveal">
+      <p class="contact-lede">Send a message via jade slip — or, you know, email.</p>
+      <div class="contact-grid">
+        <a class="contact-card" href="mailto:j84fang@uwaterloo.ca">
+          <span class="cc-glyph">郵</span><span class="cc-label">Email</span>
+          <span class="cc-value">j84fang@uwaterloo.ca</span>
+        </a>
+        <a class="contact-card" href="https://linkedin.com/in/justinfanguw" target="_blank" rel="noopener">
+          <span class="cc-glyph">聯</span><span class="cc-label">LinkedIn</span>
+          <span class="cc-value">justinfanguw</span>
+        </a>
+        <a class="contact-card" href="https://github.com/justinfang37" target="_blank" rel="noopener">
+          <span class="cc-glyph">碼</span><span class="cc-label">GitHub</span>
+          <span class="cc-value">justinfang37</span>
+        </a>
+        <a class="contact-card" href="tel:+17802646578">
+          <span class="cc-glyph">話</span><span class="cc-label">Phone</span>
+          <span class="cc-value">(780) 264-6578</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-seal">方</div>
+    <p>千 里 之 行 ， 始 於 足 下 — a journey of a thousand miles begins beneath one's feet.</p>
+    <p class="footer-fine">© 2026 Justin Fang · forged with jade and javascript</p>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
