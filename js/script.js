@@ -3,21 +3,46 @@
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ───────── shared petal drawing (anime cel-shaded) ───────── */
+function hexRgb(h) {
+  const v = parseInt(h.replace("#", ""), 16);
+  return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+}
+function rgbStr(c) {
+  return "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")";
+}
+/* per-petal color lerp — each frame the live colour eases toward its
+   target, so a season change is a smooth wash, not a hard snap */
+function tickPetalColor(p) {
+  if (!p.fillRgb) return;
+  const t = p.colorLerp || 0.06;
+  for (let i = 0; i < 3; i++) {
+    p.fillRgb[i] += (p.targetFillRgb[i] - p.fillRgb[i]) * t;
+    p.lineRgb[i] += (p.targetLineRgb[i] - p.lineRgb[i]) * t;
+  }
+}
+
 function drawPetal(ctx, p) {
   ctx.save();
   ctx.translate(p.x, p.y);
   ctx.rotate(p.rot);
   ctx.globalAlpha = p.alpha;
+  const fillStr = p.fillRgb ? rgbStr(p.fillRgb) : p.color.fill;
+  const lineStr = p.lineRgb ? rgbStr(p.lineRgb) : p.color.line;
+  /* a soft seasonal glow so the petals pop hard against the ink-wash
+     mountain backdrop — without it the bright pinks/yellows can look flat */
+  ctx.shadowColor = fillStr;
+  ctx.shadowBlur = Math.max(4, p.size * 0.9);
   ctx.beginPath();
   ctx.moveTo(0, -p.size);
   ctx.bezierCurveTo(p.size * 0.9, -p.size * 0.4, p.size * 0.55, p.size * 0.7, 0, p.size);
   ctx.bezierCurveTo(-p.size * 0.55, p.size * 0.7, -p.size * 0.9, -p.size * 0.4, 0, -p.size);
   ctx.closePath();
-  ctx.fillStyle = p.color.fill;
+  ctx.fillStyle = fillStr;
   ctx.fill();
+  ctx.shadowBlur = 0;
   ctx.lineJoin = "round";
   ctx.lineWidth = Math.max(1, p.size * 0.16);
-  ctx.strokeStyle = p.color.line;
+  ctx.strokeStyle = lineStr;
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(-p.size * 0.22, -p.size * 0.5);
@@ -29,20 +54,94 @@ function drawPetal(ctx, p) {
   ctx.restore();
 }
 
-const PETAL_COLORS = [
-  { fill: "#4ce06a", line: "#156d2d" },
-  { fill: "#2fc452", line: "#0f5a23" },
-  { fill: "#8df2a4", line: "#2e9e4e" },
-  { fill: "#f5d98a", line: "#bb8f33" },
-];
+/* ── seasonal palettes — petals transition winter → spring → summer →
+   autumn as you scroll through the realm. saturated and bright so the
+   change is unmistakable the instant a threshold is crossed. ── */
+const SEASONS = {
+  /* the landing page: soft plum blossoms drifting through the courtyard,
+     a gentler pink than the in-scroll spring palette */
+  blossoms: [
+    { fill: "#ffd6e3", line: "#c4647d" },
+    { fill: "#ffc0d4", line: "#a8455f" },
+    { fill: "#ffb0c9", line: "#94324d" },
+    { fill: "#ffe4ec", line: "#d68ca0" },
+    { fill: "#ff9fbb", line: "#7a2843" },
+    { fill: "#fff0f5", line: "#c98aa0" },
+  ],
+  winter: [
+    { fill: "#ffffff", line: "#9bb4cc" },
+    { fill: "#f4f8ff", line: "#86a2bc" },
+    { fill: "#ffffff", line: "#aebfd4" },
+    { fill: "#e8effa", line: "#7894b0" },
+  ],
+  spring: [
+    { fill: "#ff3d8a", line: "#7a0a3a" },
+    { fill: "#ff1493", line: "#600728" },
+    { fill: "#ff6fb0", line: "#8b1a40" },
+    { fill: "#ff9ec7", line: "#a02e4d" },
+    { fill: "#ff2d6f", line: "#52051f" },
+  ],
+  summer: [
+    { fill: "#00ff5e", line: "#00541d" },
+    { fill: "#3dff7a", line: "#0a6b25" },
+    { fill: "#00e052", line: "#003d12" },
+    { fill: "#8cff9b", line: "#137a2a" },
+    { fill: "#46ff86", line: "#075420" },
+  ],
+  autumn: [
+    { fill: "#ffd900", line: "#7a5e00" },
+    { fill: "#ffeb3b", line: "#8a6a00" },
+    { fill: "#ffc107", line: "#664a00" },
+    { fill: "#ffe14d", line: "#705500" },
+    { fill: "#ffb400", line: "#5c3f00" },
+  ],
+};
+
+/* landing opens on soft plum blossoms drifting from the courtyard tree.
+   the seasonal cycle (winter → spring → summer → autumn) only kicks in
+   once the user has entered the realm and started scrolling. */
+let currentSeason = "blossoms";
+
+function pickPetalColor() {
+  const palette = SEASONS[currentSeason];
+  return palette[(Math.random() * palette.length) | 0];
+}
+
+/* eagerly retint every active petal when the season changes, so the
+   transition is unmistakable instead of waiting for old petals to fall
+   off and respawn. */
+function retintAllPetals() {
+  const apply = (p) => {
+    const c = pickPetalColor();
+    p.color = c;
+    const f = hexRgb(c.fill);
+    const l = hexRgb(c.line);
+    if (!p.fillRgb) {
+      p.fillRgb = [...f];
+      p.lineRgb = [...l];
+    }
+    p.targetFillRgb = f;
+    p.targetLineRgb = l;
+  };
+  if (Array.isArray(petals)) for (const p of petals) apply(p);
+  if (Array.isArray(burst)) for (const b of burst) if (b.petal) apply(b);
+  if (Array.isArray(window.__bgPetals)) for (const p of window.__bgPetals) apply(p);
+}
 
 function makePetal(w, h, fromTop = false) {
+  const c = pickPetalColor();
+  const fillRgb = hexRgb(c.fill);
+  const lineRgb = hexRgb(c.line);
   return {
     x: Math.random() * w,
     y: fromTop ? -20 : Math.random() * h,
     size: 5 + Math.random() * 9,
     alpha: 0.45 + Math.random() * 0.5,
-    color: PETAL_COLORS[(Math.random() * PETAL_COLORS.length) | 0],
+    color: c,
+    fillRgb: [...fillRgb],
+    lineRgb: [...lineRgb],
+    targetFillRgb: [...fillRgb],
+    targetLineRgb: [...lineRgb],
     vy: 0.25 + Math.random() * 0.7,
     vx: -0.15 + Math.random() * 0.3,
     rot: Math.random() * Math.PI * 2,
@@ -64,7 +163,6 @@ const lCtx = lCanvas.getContext("2d");
 sizeCanvas(lCanvas);
 
 let landingActive = true;
-let isFormingRing = false; 
 let petals = [];
 let trail = [];   
 let burst = [];   
@@ -75,6 +173,19 @@ function spawnTreePetal(w, h, initial) {
   p.y = initial ? Math.random() * h : -20 + Math.random() * h * 0.25;
   p.x = w - (Math.random() * w * 0.5 + (p.y / h) * w * 0.3);
   p.vx = -(0.05 + Math.random() * 0.4);
+  return p;
+}
+
+/* descent-mode spawn — petals appear below the viewport, spread across
+   the full width, and fly upward past the falling camera */
+let isDescending = false;
+function spawnDescentPetal(w, h) {
+  const p = makePetal(w, h, true);
+  p.x = Math.random() * w;
+  p.y = h + 20 + Math.random() * 120;
+  p.vx = (Math.random() - 0.5) * 0.6;
+  p.vy = -(8 + Math.random() * 18);
+  p.swayAmp = 0.2 + Math.random() * 0.4;
   return p;
 }
 
@@ -175,41 +286,33 @@ function landingFrame() {
   lCtx.clearRect(0, 0, lCanvas.width, lCanvas.height);
 
   for (const p of petals) {
-    if (isFormingRing) {
-      const cx = lCanvas.width / 2;
-      const cy = lCanvas.height / 2;
-      p.ringAngle += p.ringSpeed;
-      const tx = cx + Math.cos(p.ringAngle) * p.ringRadius;
-      const ty = cy + Math.sin(p.ringAngle) * p.ringRadius;
-      p.x += (tx - p.x) * 0.08;
-      p.y += (ty - p.y) * 0.08;
-      p.trot = p.ringAngle + Math.PI / 2; 
-      let dRot = (p.trot - p.rot) % (Math.PI * 2);
-      if (dRot > Math.PI) dRot -= Math.PI * 2;
-      if (dRot < -Math.PI) dRot += Math.PI * 2;
-      p.rot += dRot * 0.1;
-      p.gvx = (p.gvx || 0) * 0.95;
-      p.gvy = (p.gvy || 0) * 0.95;
-      p.x += p.gvx;
-      p.y += p.gvy;
-    } else {
-      p.sway += p.swaySpeed;
-      p.gvx = (p.gvx || 0) * 0.95;
-      p.gvy = (p.gvy || 0) * 0.95;
-      p.x += p.vx + p.gvx + Math.sin(p.sway) * p.swayAmp * 0.4;
-      p.y += p.vy + p.gvy;
-      p.rot += p.vr;
-      const dx = p.x - mouse.x, dy = p.y - mouse.y;
-      const d2 = dx * dx + dy * dy;
-      if (d2 < 9000 && d2 > 1) {
-        const f = 60 / d2;
-        p.x += dx * f;
-        p.y += dy * f;
-      }
-      if (p.y > lCanvas.height + 24) Object.assign(p, spawnTreePetal(lCanvas.width, lCanvas.height, false));
-      if (p.x < -30) p.x = lCanvas.width + 20;
-      if (p.x > lCanvas.width + 30) p.x = -20;
+    p.sway += p.swaySpeed;
+    p.gvx = (p.gvx || 0) * 0.95;
+    p.gvy = (p.gvy || 0) * 0.95;
+    p.x += p.vx + p.gvx + Math.sin(p.sway) * p.swayAmp * 0.4;
+    p.y += p.vy + p.gvy;
+    p.rot += p.vr;
+    const dx = p.x - mouse.x, dy = p.y - mouse.y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < 9000 && d2 > 1) {
+      const f = 60 / d2;
+      p.x += dx * f;
+      p.y += dy * f;
     }
+    if (isDescending) {
+      /* during descent: anything that scrolls off the top OR the bottom
+         comes back from below, spread across the full width, flying
+         upward — you're falling past them */
+      if (p.y < -40 || p.y > lCanvas.height + 80) {
+        Object.assign(p, spawnDescentPetal(lCanvas.width, lCanvas.height));
+      }
+    } else {
+      if (p.y > lCanvas.height + 24) Object.assign(p, spawnTreePetal(lCanvas.width, lCanvas.height, false));
+      if (p.y < -40) Object.assign(p, spawnTreePetal(lCanvas.width, lCanvas.height, false));
+    }
+    if (p.x < -30) p.x = lCanvas.width + 20;
+    if (p.x > lCanvas.width + 30) p.x = -20;
+    tickPetalColor(p);
     drawPetal(lCtx, p);
   }
 
@@ -225,10 +328,11 @@ function landingFrame() {
     b.rot += b.vr;
     if (b.alpha <= 0) { burst.splice(i, 1); continue; }
     if (b.petal) {
+      tickPetalColor(b);
       drawPetal(lCtx, b);
     } else {
       lCtx.globalAlpha = b.alpha;
-      lCtx.fillStyle = b.color.fill;
+      lCtx.fillStyle = b.fillRgb ? rgbStr(b.fillRgb) : b.color.fill;
       lCtx.shadowColor = "#34e89e";
       lCtx.shadowBlur = 10;
       lCtx.beginPath();
@@ -242,31 +346,6 @@ function landingFrame() {
   requestAnimationFrame(landingFrame);
 }
 landingFrame();
-
-function petalStorm() {
-  const w = lCanvas.width, h = lCanvas.height;
-  for (let i = 0; i < 130; i++) {
-    const fromLeft = Math.random() < 0.5;
-    burst.push({
-      petal: true,
-      x: fromLeft ? -30 - Math.random() * 120 : w + 30 + Math.random() * 120,
-      y: Math.random() * h,
-      vx: (fromLeft ? 1 : -1) * (7 + Math.random() * 11),
-      vy: -2.5 + Math.random() * 5,
-      size: 5 + Math.random() * 9,
-      alpha: 0.85 + Math.random() * 0.15,
-      decay: 0.003 + Math.random() * 0.004,
-      color: PETAL_COLORS[(Math.random() * PETAL_COLORS.length) | 0],
-      rot: Math.random() * Math.PI * 2,
-      vr: -0.2 + Math.random() * 0.4,
-    });
-  }
-  for (const p of petals) {
-    p.gvx = (p.gvx || 0) + (Math.random() - 0.5) * 14;
-    p.gvy = (p.gvy || 0) + (Math.random() - 0.5) * 10;
-    p.vr += (Math.random() - 0.5) * 0.4;
-  }
-}
 
 function blastPetals(angleDeg) {
   const t = (angleDeg * Math.PI) / 180;
@@ -288,29 +367,64 @@ enterBtn.addEventListener("click", () => {
   entered = true;
 
   landing.classList.add("splashing");
-  setTimeout(() => { document.documentElement.classList.add("ink"); }, reducedMotion ? 0 : 1600);
 
+  let descentAccel = null;
   if (!reducedMotion) {
-    setTimeout(() => {
-      petalStorm();
-      isFormingRing = true;
-      const cx = lCanvas.width / 2;
-      const cy = lCanvas.height / 2;
-      const baseRadius = Math.min(cx, cy) * 0.95;
-      petals.forEach((p) => {
-        p.ringAngle = Math.random() * Math.PI * 2;
-        p.ringRadius = baseRadius + (Math.random() - 0.5) * (baseRadius * 0.9);
-        p.ringSpeed = 0.03 + Math.random() * 0.06;
-      });
-    }, 1200);
+    /* descent starts immediately — give every petal a small upward kick
+       so the falling stops and the rise begins right away (no bulk reset
+       of positions, just velocity), then ramp acceleration upward */
+    for (const p of petals) {
+      p.vy = -2 - Math.random() * 3;
+      p.swayAmp *= 0.6;
+    }
+    isDescending = true;
+    descentAccel = setInterval(() => {
+      for (const p of petals) {
+        p.vy = Math.max((p.vy || 0) * 1.10 - 0.55, -34);
+        p.vx *= 0.93;
+        p.swayAmp *= 0.9;
+        p.colorLerp = 0.12;
+      }
+    }, 40);
+
+    /* cycle the seasons under our feet as we descend — these set the
+       target only; each petal eases there over a few frames */
+    setTimeout(() => { currentSeason = "spring";  retintAllPetals(); }, 50);
+    setTimeout(() => { currentSeason = "summer";  retintAllPetals(); }, 800);
+    setTimeout(() => { currentSeason = "autumn";  retintAllPetals(); }, 1550);
   }
 
-  const SWORD_AT = reducedMotion ? 30 : 2400;
+  const SLAM_AT = reducedMotion ? 30 : 2300;
 
+  /* the slam: whiteout flash + shake + hard stop on the descent. petals
+     keep their upward velocity but we stop recycling them from below,
+     so the stream tapers off as they exit the top of the screen. */
+  setTimeout(() => {
+    landing.classList.add("slamming");
+    if (descentAccel) { clearInterval(descentAccel); descentAccel = null; }
+    isDescending = false;
+    if (!reducedMotion) {
+      for (const p of petals) {
+        p.gvx = (Math.random() - 0.5) * 4;
+        p.gvy = (Math.random() - 0.5) * 4;
+        p.colorLerp = 0.18;
+      }
+    }
+  }, SLAM_AT);
+
+  /* after the slam: drop into winter snow and apply grayscale */
+  setTimeout(() => {
+    document.documentElement.classList.add("ink");
+    currentSeason = "winter";
+    retintAllPetals();
+  }, SLAM_AT + 250);
+
+  /* sword slashes follow the slam — no tornado gather; petals keep
+     streaming upward and the slashes just rip through them */
+  const SWORD_AT = SLAM_AT + 350;
   setTimeout(() => { landing.classList.add("entering"); }, SWORD_AT);
 
   if (!reducedMotion) {
-    setTimeout(() => { isFormingRing = false; }, SWORD_AT + 100);
     const SLASHES = [ { at: 200, angle: -24 }, { at: 400, angle: 63 }, { at: 600, angle: -76 } ];
     for (const s of SLASHES) { setTimeout(() => blastPetals(s.angle), SWORD_AT + s.at); }
     setTimeout(() => {
@@ -319,6 +433,9 @@ enterBtn.addEventListener("click", () => {
         const ang = Math.random() * Math.PI * 2;
         const speed = 2 + Math.random() * 9;
         const isPetal = Math.random() < 0.55;
+        const c = pickPetalColor();
+        const f = hexRgb(c.fill);
+        const l = hexRgb(c.line);
         burst.push({
           petal: isPetal,
           x: cx, y: cy,
@@ -327,7 +444,11 @@ enterBtn.addEventListener("click", () => {
           size: isPetal ? 4 + Math.random() * 8 : 1.5 + Math.random() * 3,
           alpha: 1,
           decay: 0.006 + Math.random() * 0.012,
-          color: PETAL_COLORS[(Math.random() * PETAL_COLORS.length) | 0],
+          color: c,
+          fillRgb: [...f],
+          lineRgb: [...l],
+          targetFillRgb: [...f],
+          targetLineRgb: [...l],
           rot: Math.random() * Math.PI * 2,
           vr: -0.08 + Math.random() * 0.16,
         });
@@ -337,7 +458,7 @@ enterBtn.addEventListener("click", () => {
 
   const mainEl = document.getElementById("main");
   const shatterEl = document.getElementById("shatter");
-  const SHATTER_AT = SWORD_AT + 1000; 
+  const SHATTER_AT = SWORD_AT + 1000;
 
   setTimeout(() => {
     landingActive = false;
@@ -347,7 +468,7 @@ enterBtn.addEventListener("click", () => {
 
     mainEl.hidden = false;
     initMain();
-    void mainEl.offsetWidth; 
+    void mainEl.offsetWidth;
     mainEl.classList.add("arrived");
     document.body.style.overflow = "auto";
   }, SHATTER_AT);
@@ -409,6 +530,29 @@ function initMain() {
     fadeMountain();
   }
 
+  /* ── seasonal scroll-cycle: as the user descends through the realm,
+        the falling petals shift from winter snow → spring plum blossoms
+        → summer green → autumn cinnabar leaves ── */
+  const updateSeason = () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const p = max > 0 ? window.scrollY / max : 0;
+    const next =
+      p < 0.18 ? "winter" :
+      p < 0.45 ? "spring" :
+      p < 0.72 ? "summer" : "autumn";
+    if (next !== currentSeason) {
+      currentSeason = next;
+      document.body.dataset.season = next;
+      retintAllPetals();
+    }
+  };
+  window.addEventListener("scroll", updateSeason, { passive: true });
+  /* force winter snow the moment the user lands on the main scene */
+  currentSeason = "winter";
+  retintAllPetals();
+  document.body.dataset.season = currentSeason;
+  updateSeason();
+
   document.querySelectorAll(".proj-card").forEach((card) => {
     card.addEventListener("mousemove", (e) => {
       const r = card.getBoundingClientRect();
@@ -424,13 +568,18 @@ function initMain() {
   if (reducedMotion) return;
 
   const bgPetals = [];
+  window.__bgPetals = bgPetals;
   const motes = [];
   const N_PETALS = Math.min(60, (innerWidth * innerHeight) / 20000);
   const N_MOTES = Math.min(50, (innerWidth * innerHeight) / 22000);
 
   for (let i = 0; i < N_PETALS; i++) {
     const p = makePetal(canvas.width, canvas.height);
-    p.vy *= 0.55; p.alpha *= 0.85; bgPetals.push(p);
+    p.vy *= 0.55;
+    /* keep petals close to fully opaque so the bright seasonal colour
+       reads against the dark mountain — was 0.85 multiplier before */
+    p.alpha = Math.max(0.78, p.alpha);
+    bgPetals.push(p);
   }
   for (let i = 0; i < N_MOTES; i++) {
     motes.push({
@@ -472,8 +621,10 @@ function initMain() {
       p.y += p.vy; p.rot += p.vr;
       if (p.y > canvas.height + 24) {
         Object.assign(p, makePetal(canvas.width, canvas.height, true));
-        p.vy *= 0.55; p.alpha *= 0.85;
+        p.vy *= 0.55;
+        p.alpha = Math.max(0.78, p.alpha);
       }
+      tickPetalColor(p);
       drawPetal(ctx, p);
     }
     drawTrail(ctx);
@@ -486,4 +637,26 @@ function initMain() {
 
 window.addEventListener("resize", () => { if (landingActive) sizeCanvas(lCanvas); });
 
-if (location.hash && location.hash !== "#hero") { enterBtn.click(); }
+/* If the page was deep-linked to a specific section (e.g. you came back
+   from a project scroll with #projects in the URL), skip the cinematic
+   and drop straight onto the main page. A plain reload (no hash, or
+   just #hero) always shows the landing again. */
+function skipLandingDirectly() {
+  if (entered) return;
+  entered = true;
+  landingActive = false;
+  document.documentElement.classList.add("ink");
+  const mainEl = document.getElementById("main");
+  const shatterEl = document.getElementById("shatter");
+  mainEl.hidden = false;
+  initMain();
+  mainEl.classList.add("arrived");
+  if (landing) landing.remove();
+  if (shatterEl) shatterEl.remove();
+  if (targetCursor) targetCursor.remove();
+  document.body.style.overflow = "auto";
+}
+
+if (location.hash && location.hash !== "#hero") {
+  skipLandingDirectly();
+}

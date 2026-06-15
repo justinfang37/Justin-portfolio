@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scroll · Justin Fang</title>
+<meta name="description" content="A project scroll from Justin Fang's portfolio.">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="scroll-page">
+
+<canvas id="scroll-canvas" aria-hidden="true"></canvas>
+
+<main class="scroll-stage">
+  <a class="scroll-back" href="index.html#projects">
+    <span class="arrow" aria-hidden="true">←</span>
+    Return to the Realm
+  </a>
+
+  <article class="scroll">
+    <div class="roller roller-top"></div>
+    <div class="parchment">
+      <div class="parchment-inner" id="parch">
+        <!-- populated by project.js -->
+      </div>
+    </div>
+    <div class="roller roller-bottom"></div>
+    <span class="tassel" aria-hidden="true"></span>
+  </article>
+</main>
+
+<script src="js/project.js?v=2"></script>
+</body>
+</html>
